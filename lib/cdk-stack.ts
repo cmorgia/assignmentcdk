@@ -1,6 +1,6 @@
 import { AutoScalingGroup, Signals } from '@aws-cdk/aws-autoscaling';
 import { Certificate, CertificateValidation } from '@aws-cdk/aws-certificatemanager';
-import { AllowedMethods, Distribution, SecurityPolicyProtocol, SSLMethod, ViewerCertificate, ViewerProtocolPolicy } from '@aws-cdk/aws-cloudfront';
+import { Distribution, ViewerProtocolPolicy } from '@aws-cdk/aws-cloudfront';
 import { LoadBalancerV2Origin, S3Origin } from '@aws-cdk/aws-cloudfront-origins';
 import { AmazonLinuxImage, CloudFormationInit, InitCommand, InitConfig, InitFile, InitGroup, InitPackage, InitService, InstanceClass, InstanceSize, InstanceType, Port, SubnetType, Vpc } from '@aws-cdk/aws-ec2';
 import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup, TargetType } from '@aws-cdk/aws-elasticloadbalancingv2';
@@ -78,8 +78,8 @@ export class CdkStack extends cdk.Stack {
     const publicZone = new PublicHostedZone(this,'publicZone',{ zoneName: 'example.com' });
 
     const certificate = new Certificate(this, 'Certificate', {
-      domainName: 'example.com',
-      subjectAlternativeNames: ['*.example.com'],
+      domainName: 'testassignmentcmorgia.com',
+      subjectAlternativeNames: ['*.testassignmentcmorgia.com'],
       validation: CertificateValidation.fromDns(publicZone)
     });
 
@@ -95,7 +95,7 @@ export class CdkStack extends cdk.Stack {
         }
       },
       certificate: certificate,
-      domainNames: ['example.com', 'www.example.com']
+      domainNames: ['testassignmentcmorgia.com', 'www.testassignmentcmorgia.com']
     });
 
     const cluster = new ServerlessCluster(this, 'auroraServerless', {
