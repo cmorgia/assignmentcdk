@@ -1,10 +1,11 @@
 import { AutoScalingGroup, Signals } from '@aws-cdk/aws-autoscaling';
-import { Certificate } from '@aws-cdk/aws-certificatemanager';
+import { Certificate, CertificateValidation } from '@aws-cdk/aws-certificatemanager';
 import { AllowedMethods, Distribution, SecurityPolicyProtocol, SSLMethod, ViewerCertificate, ViewerProtocolPolicy } from '@aws-cdk/aws-cloudfront';
 import { LoadBalancerV2Origin, S3Origin } from '@aws-cdk/aws-cloudfront-origins';
 import { AmazonLinuxImage, CloudFormationInit, InitCommand, InitConfig, InitFile, InitGroup, InitPackage, InitService, InstanceClass, InstanceSize, InstanceType, Port, SubnetType, Vpc } from '@aws-cdk/aws-ec2';
 import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup, TargetType } from '@aws-cdk/aws-elasticloadbalancingv2';
 import { DatabaseClusterEngine, ParameterGroup, ServerlessCluster } from '@aws-cdk/aws-rds';
+import { PublicHostedZone } from '@aws-cdk/aws-route53';
 import { Bucket } from '@aws-cdk/aws-s3';
 import * as cdk from '@aws-cdk/core';
 import { Duration } from '@aws-cdk/core';
@@ -74,9 +75,12 @@ export class CdkStack extends cdk.Stack {
       websiteIndexDocument: 'demo.html'
     });
 
+    const publicZone = new PublicHostedZone(this,'publicZone',{ zoneName: 'example.com' });
+
     const certificate = new Certificate(this, 'Certificate', {
       domainName: 'example.com',
       subjectAlternativeNames: ['*.example.com'],
+      validation: CertificateValidation.fromDns(publicZone)
     });
 
     const myWebDistribution = new Distribution(this, 'myDist', {
