@@ -75,7 +75,7 @@ export class CdkStack extends cdk.Stack {
       websiteIndexDocument: 'demo.html'
     });
 
-    const publicZone = new PublicHostedZone(this,'publicZone',{ zoneName: 'example.com' });
+    const publicZone = new PublicHostedZone(this,'publicZone',{ zoneName: 'testassignmentcmorgia.com' });
 
     const certificate = new Certificate(this, 'Certificate', {
       domainName: 'testassignmentcmorgia.com',
