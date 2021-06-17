@@ -45,7 +45,7 @@ export class PipelineStack extends Stack {
             synthAction: SimpleSynthAction.standardNpmSynth({
                 sourceArtifact,
                 cloudAssemblyArtifact,
-                installCommand: 'npm i -g npm && npm ci',
+                installCommand: 'npm i -g npm && npm install cdk-assume-role-credential-plugin && npm ci',
                 rolePolicyStatements: [
                     new PolicyStatement({
                       effect: Effect.ALLOW,
