@@ -2,7 +2,7 @@ import { Repository } from "@aws-cdk/aws-codecommit";
 import { Artifact } from "@aws-cdk/aws-codepipeline";
 import { CodeCommitSourceAction } from '@aws-cdk/aws-codepipeline-actions';
 import { Effect, PolicyStatement } from "@aws-cdk/aws-iam";
-import { Construct, Stack, Stage, StageProps } from "@aws-cdk/core";
+import { CfnOutput, Construct, Stack, Stage, StageProps } from "@aws-cdk/core";
 import { CdkPipeline, SimpleSynthAction } from "@aws-cdk/pipelines";
 import { CdkStack } from "./cdk-stack";
 
@@ -64,5 +64,11 @@ export class PipelineStack extends Stack {
         testStage.addManualApprovalAction({actionName:'approveToProduction'});
         pipeline.addApplicationStage(new MyStage(this, 'prodStage', { env: { account: config.prodAccount, region: 'eu-west-1' } }));
 
+
+        new CfnOutput(this, 'repositoryHttp', {
+            value: repo.repositoryCloneUrlHttp,
+            description: 'CodeCommit repository URL', 
+            exportName: 'repositoryHttp'
+        });
     }
 }

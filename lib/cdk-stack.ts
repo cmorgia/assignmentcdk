@@ -8,7 +8,7 @@ import { DatabaseClusterEngine, ParameterGroup, ServerlessCluster } from '@aws-c
 import { PublicHostedZone } from '@aws-cdk/aws-route53';
 import { Bucket } from '@aws-cdk/aws-s3';
 import * as cdk from '@aws-cdk/core';
-import { Duration } from '@aws-cdk/core';
+import { CfnOutput, Duration } from '@aws-cdk/core';
 
 export class CdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -103,6 +103,7 @@ export class CdkStack extends cdk.Stack {
       parameterGroup: ParameterGroup.fromParameterGroupName(this, 'ParameterGroup', 'default.aurora-postgresql10'),
       vpc: vpc
     });
+
   }
 
 }
