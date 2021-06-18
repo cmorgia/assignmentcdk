@@ -78,8 +78,8 @@ export class CdkStack extends cdk.Stack {
     const publicZone = new PublicHostedZone(this,'publicZone',{ zoneName: 'testassignmentcmorgia.com' });
 
     const certificate = new Certificate(this, 'Certificate', {
-      domainName: 'testassignmentcmorgia.com',
-      subjectAlternativeNames: ['*.testassignmentcmorgia.com'],
+      domainName: 'www.testassignmentcmorgia.com',
+      //subjectAlternativeNames: ['*.testassignmentcmorgia.com'],
       validation: CertificateValidation.fromDns(publicZone)
     });
 
