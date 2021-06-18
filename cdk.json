@@ -16,9 +16,7 @@
     "@aws-cdk/aws-lambda:recognizeVersionProps": true,
     "@aws-cdk/core:newStyleStackSynthesis": true,
     "cicdAccount": "052623131611",
-    "testAccount": "673756903570",
-    "prodAccount": "536995177148",
-    "assume-role-credentials:readIamRoleName": "cdk-cicd-role",
-    "assume-role-credentials:writeIamRoleName": "cdk-cicd-role"
+    "testAccount": "693196418513",
+    "prodAccount": "536995177148"
   }
 }
