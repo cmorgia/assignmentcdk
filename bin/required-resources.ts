@@ -9,9 +9,13 @@ const test = { account: app.node.tryGetContext('testAccount'), region: 'eu-west-
 const prod = { account: app.node.tryGetContext('prodAccount'), region: 'eu-west-1' }
 const trustedAccount = app.node.tryGetContext('cicdAccount');
 
-new CertStack(app,'testCert','test',{
+new CertStack(app, 'testCert', {
+  subdomain: 'test',
+  delegationAccount: app.node.tryGetContext('prodAccount'),
+  parentZone: 'testlabmorgia.co.uk'
+}, {
   env: {
-    account:app.node.tryGetContext('testAccount'),
+    account: app.node.tryGetContext('testAccount'),
     region: 'us-east-1'
   }
 });
@@ -21,9 +25,13 @@ new RequiredResourcesStack(app, 'test', {
   trustedAccount
 });
 
-new CertStack(app,'prodCert','prod',{
+new CertStack(app, 'prodCert', {
+  subdomain: 'prod',
+  delegationAccount: app.node.tryGetContext('testAccount'),
+  parentZone: 'testlabmorgia.co.uk'
+}, {
   env: {
-    account:app.node.tryGetContext('prodAccount'),
+    account: app.node.tryGetContext('prodAccount'),
     region: 'us-east-1'
   }
 });
