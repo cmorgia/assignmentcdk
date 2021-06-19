@@ -100,7 +100,7 @@ export class CdkStack extends cdk.Stack {
         }
       },
       certificate: certificate,
-      domainNames: [`${subdomain}.testlabmorgia.co.uk`, `www.${subdomain}.testlabmorgia.co.uk`]
+      domainNames: [`www.${subdomain}.testlabmorgia.co.uk`]
     });
 
     
