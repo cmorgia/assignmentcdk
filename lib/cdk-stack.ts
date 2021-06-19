@@ -74,7 +74,7 @@ export class CdkStack extends cdk.Stack {
     asg.scaleOnCpuUtilization('cpuScale', { targetUtilizationPercent: 50 });
 
     const staticFiles = new Bucket(this,'staticFiles',{
-      websiteIndexDocument: 'demo.html'
+      //websiteIndexDocument: 'demo.html'
     });
 
     const cluster = new ServerlessCluster(this, 'auroraServerless', {
