@@ -83,11 +83,11 @@ export class CdkStack extends cdk.Stack {
 
     //const publicZone = new PublicHostedZone(this,'publicZone',{ zoneName: 'testlabmorgia.co.uk' });
     const publicZone = PublicHostedZone.fromPublicHostedZoneId(this, 'publicHostedZone', 'Z0144539U773JWVYFPX0');
-    // const certificate = new Certificate(this, 'Certificate', {
-    //   domainName: 'www.testlabmorgia.co.uk',
-    //   subjectAlternativeNames: ['*.testlabmorgia.co.uk'],
-    //   validation: CertificateValidation.fromDns(publicZone)
-    // });
+    const certificate = new Certificate(this, 'Certificate', {
+      domainName: 'www.testlabmorgia.co.uk',
+      subjectAlternativeNames: ['*.testlabmorgia.co.uk'],
+      validation: CertificateValidation.fromDns(publicZone)
+    });
 
     const myWebDistribution = new Distribution(this, 'myDist', {
       defaultBehavior: {
@@ -100,8 +100,8 @@ export class CdkStack extends cdk.Stack {
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         }
       },
-      //certificate: certificate,
-      //domainNames: ['testlabmorgia.co.uk', 'www.testlabmorgia.co.uk']
+      certificate: certificate,
+      domainNames: ['testlabmorgia.co.uk', 'www.testlabmorgia.co.uk']
     });
 
     
