@@ -5,6 +5,8 @@ import { LoadBalancerV2Origin, S3Origin } from '@aws-cdk/aws-cloudfront-origins'
 import { AmazonLinuxImage, CloudFormationInit, InitCommand, InitConfig, InitFile, InitGroup, InitPackage, InitService, InstanceClass, InstanceSize, InstanceType, Port, SubnetType, Vpc } from '@aws-cdk/aws-ec2';
 import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup, TargetType } from '@aws-cdk/aws-elasticloadbalancingv2';
 import { DatabaseClusterEngine, ParameterGroup, ServerlessCluster } from '@aws-cdk/aws-rds';
+import { ARecord, PublicHostedZone, RecordTarget } from '@aws-cdk/aws-route53';
+import { CloudFrontTarget } from '@aws-cdk/aws-route53-targets';
 import { Bucket } from '@aws-cdk/aws-s3';
 import * as cdk from '@aws-cdk/core';
 import { Duration } from '@aws-cdk/core';
@@ -103,7 +105,11 @@ export class CdkStack extends cdk.Stack {
       domainNames: [`www.${subdomain}.testlabmorgia.co.uk`]
     });
 
-    
+    new ARecord(this,'aliasCF',{
+      recordName: 'www.test',
+      zone: PublicHostedZone.fromLookup(this, 'publicHostedZone', { domainName: 'testlabmorgia.co.uk' }),
+      target: RecordTarget.fromAlias(new CloudFrontTarget(myWebDistribution))
+    });
 
   }
 

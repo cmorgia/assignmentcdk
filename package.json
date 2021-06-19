@@ -33,6 +33,7 @@
     "@aws-cdk/aws-iam": "^1.109.0",
     "@aws-cdk/aws-rds": "^1.109.0",
     "@aws-cdk/aws-route53": "^1.109.0",
+    "@aws-cdk/aws-route53-targets": "^1.109.0",
     "@aws-cdk/aws-s3": "^1.109.0",
     "@aws-cdk/aws-ssm": "^1.109.0",
     "@aws-cdk/core": "^1.109.0",
