@@ -75,11 +75,11 @@ export class CdkStack extends cdk.Stack {
       websiteIndexDocument: 'demo.html'
     });
 
-    const publicZone = new PublicHostedZone(this,'publicZone',{ zoneName: 'testassignmentcmorgia.com' });
+    const publicZone = new PublicHostedZone(this,'publicZone',{ zoneName: 'testlabmorgia.co.uk' });
 
     const certificate = new Certificate(this, 'Certificate', {
-      domainName: 'www.testassignmentcmorgia.com',
-      //subjectAlternativeNames: ['*.testassignmentcmorgia.com'],
+      domainName: 'www.testlabmorgia.co.uk',
+      subjectAlternativeNames: ['*.testlabmorgia.co.uk'],
       validation: CertificateValidation.fromDns(publicZone)
     });
 
@@ -95,7 +95,7 @@ export class CdkStack extends cdk.Stack {
         }
       },
       certificate: certificate,
-      domainNames: ['testassignmentcmorgia.com', 'www.testassignmentcmorgia.com']
+      domainNames: ['testlabmorgia.co.uk', 'www.testlabmorgia.co.uk']
     });
 
     const cluster = new ServerlessCluster(this, 'auroraServerless', {
