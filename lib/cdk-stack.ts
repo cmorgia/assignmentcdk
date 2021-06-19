@@ -106,7 +106,7 @@ export class CdkStack extends cdk.Stack {
     });
 
     new ARecord(this,'aliasCF',{
-      recordName: 'www.test',
+      recordName: 'www',
       zone: PublicHostedZone.fromLookup(this, 'publicHostedZone', { domainName: `${subdomain}.testlabmorgia.co.uk` }),
       target: RecordTarget.fromAlias(new CloudFrontTarget(myWebDistribution))
     });
