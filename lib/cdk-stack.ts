@@ -1,17 +1,17 @@
 import { AutoScalingGroup, Signals } from '@aws-cdk/aws-autoscaling';
-import { Certificate, CertificateValidation } from '@aws-cdk/aws-certificatemanager';
+import { Certificate } from '@aws-cdk/aws-certificatemanager';
 import { Distribution, ViewerProtocolPolicy } from '@aws-cdk/aws-cloudfront';
 import { LoadBalancerV2Origin, S3Origin } from '@aws-cdk/aws-cloudfront-origins';
 import { AmazonLinuxImage, CloudFormationInit, InitCommand, InitConfig, InitFile, InitGroup, InitPackage, InitService, InstanceClass, InstanceSize, InstanceType, Port, SubnetType, Vpc } from '@aws-cdk/aws-ec2';
 import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup, TargetType } from '@aws-cdk/aws-elasticloadbalancingv2';
 import { DatabaseClusterEngine, ParameterGroup, ServerlessCluster } from '@aws-cdk/aws-rds';
-import { PublicHostedZone } from '@aws-cdk/aws-route53';
 import { Bucket } from '@aws-cdk/aws-s3';
 import * as cdk from '@aws-cdk/core';
-import { CfnOutput, Duration } from '@aws-cdk/core';
+import { Duration } from '@aws-cdk/core';
+import { ParameterReader } from '@henrist/cdk-cross-region-params';
 
 export class CdkStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.Construct, id: string, subdomain:string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     const vpc = new Vpc(this, 'vpc', {
@@ -81,13 +81,12 @@ export class CdkStack extends cdk.Stack {
       vpc: vpc
     });
 
-    //const publicZone = new PublicHostedZone(this,'publicZone',{ zoneName: 'testlabmorgia.co.uk' });
-    const publicZone = PublicHostedZone.fromPublicHostedZoneId(this, 'publicHostedZone', 'Z0144539U773JWVYFPX0');
-    const certificate = new Certificate(this, 'Certificate', {
-      domainName: 'www.testlabmorgia.co.uk',
-      subjectAlternativeNames: ['*.testlabmorgia.co.uk'],
-      validation: CertificateValidation.fromDns(publicZone)
-    });
+    const certificateArn = new ParameterReader(this,'certParam',{
+      region: 'us-east-1',
+      parameterName: `${subdomain}Certificate`
+    }).parameterValue;
+
+    const certificate = Certificate.fromCertificateArn(this,'certificate', certificateArn);
 
     const myWebDistribution = new Distribution(this, 'myDist', {
       defaultBehavior: {
@@ -101,7 +100,7 @@ export class CdkStack extends cdk.Stack {
         }
       },
       certificate: certificate,
-      domainNames: ['testlabmorgia.co.uk', 'www.testlabmorgia.co.uk']
+      domainNames: [`${subdomain}.testlabmorgia.co.uk`, `www.${subdomain}.testlabmorgia.co.uk`]
     });
 
     

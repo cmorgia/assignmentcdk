@@ -34,8 +34,10 @@
     "@aws-cdk/aws-rds": "^1.109.0",
     "@aws-cdk/aws-route53": "^1.109.0",
     "@aws-cdk/aws-s3": "^1.109.0",
+    "@aws-cdk/aws-ssm": "^1.109.0",
     "@aws-cdk/core": "^1.109.0",
     "@aws-cdk/pipelines": "^1.109.0",
+    "@henrist/cdk-cross-region-params": "^1.0.1",
     "source-map-support": "^0.5.16"
   }
 }

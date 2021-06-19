@@ -5,12 +5,12 @@ import { Effect, PolicyStatement } from "@aws-cdk/aws-iam";
 import { CfnOutput, Construct, Stack, Stage, StageProps } from "@aws-cdk/core";
 import { CdkPipeline, SimpleSynthAction } from "@aws-cdk/pipelines";
 import { CdkStack } from "./cdk-stack";
+import { CertStack } from "./cert-stack";
 
 class MyStage extends Stage {
-    constructor(scope: Construct, id: string, props?: StageProps) {
+    constructor(scope: Construct, id: string, subdomain:string, props?: StageProps) {
         super(scope, id, props);
-
-        const stack = new CdkStack(this, 'mainStack');
+        const stack = new CdkStack(this, 'mainStack', subdomain);
     }
 }
 
@@ -60,9 +60,9 @@ export class PipelineStack extends Stack {
             })
         });
 
-        const testStage = pipeline.addApplicationStage(new MyStage(this, 'testStage', { env: { account: config.testAccount, region: 'eu-west-1' } }));
+        const testStage = pipeline.addApplicationStage(new MyStage(this, 'testStage', 'test',{ env: { account: config.testAccount, region: 'eu-west-1' } }));
         testStage.addManualApprovalAction({actionName:'approveToProduction'});
-        pipeline.addApplicationStage(new MyStage(this, 'prodStage', { env: { account: config.prodAccount, region: 'eu-west-1' } }));
+        pipeline.addApplicationStage(new MyStage(this, 'prodStage', 'prod', { env: { account: config.prodAccount, region: 'eu-west-1' } }));
 
 
         new CfnOutput(this, 'repositoryHttp', {
