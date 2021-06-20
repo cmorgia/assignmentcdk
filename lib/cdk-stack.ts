@@ -87,13 +87,13 @@ export class CdkStack extends cdk.Stack {
     asg.connections.allowFrom(alb, Port.tcp(80));
     asg.scaleOnCpuUtilization('cpuScale', { targetUtilizationPercent: 50 });
 
-    const staticFiles = new Bucket(this, 'staticFiles');
-
     const cluster = new ServerlessCluster(this, 'auroraServerless', {
       engine: DatabaseClusterEngine.AURORA_POSTGRESQL,
       parameterGroup: ParameterGroup.fromParameterGroupName(this, 'ParameterGroup', 'default.aurora-postgresql10'),
       vpc: vpc
     });
+
+    const staticFiles = new Bucket(this, 'staticFiles');
 
     const certificateArn = new ParameterReader(this, 'certParam', {
       region: 'us-east-1',
@@ -126,6 +126,7 @@ export class CdkStack extends cdk.Stack {
 
     new BucketDeployment(this, 'bucketDeployment', {
       destinationBucket: staticFiles,
+      destinationKeyPrefix:'static',
       sources: [Source.asset('./site')],
       distribution: myWebDistribution,
       distributionPaths: ['/static/*']
