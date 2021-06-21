@@ -3,6 +3,7 @@ import { Certificate } from '@aws-cdk/aws-certificatemanager';
 import { Distribution, OriginProtocolPolicy, ViewerProtocolPolicy } from '@aws-cdk/aws-cloudfront';
 import { LoadBalancerV2Origin, S3Origin } from '@aws-cdk/aws-cloudfront-origins';
 import { AmazonLinuxImage, CloudFormationInit, InitCommand, InitConfig, InitFile, InitGroup, InitPackage, InitService, InstanceClass, InstanceSize, InstanceType, InterfaceVpcEndpointAwsService, Peer, Port, SecurityGroup, SubnetType, Vpc } from '@aws-cdk/aws-ec2';
+import { FileSystem } from '@aws-cdk/aws-efs';
 import { CfnReplicationGroup, CfnSubnetGroup } from '@aws-cdk/aws-elasticache';
 import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup, TargetType } from '@aws-cdk/aws-elasticloadbalancingv2';
 import { DatabaseClusterEngine, ParameterGroup, ServerlessCluster } from '@aws-cdk/aws-rds';
@@ -11,7 +12,7 @@ import { CloudFrontTarget } from '@aws-cdk/aws-route53-targets';
 import { Bucket } from '@aws-cdk/aws-s3';
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
 import * as cdk from '@aws-cdk/core';
-import { CfnOutput, Duration } from '@aws-cdk/core';
+import { CfnOutput, Duration, Stack } from '@aws-cdk/core';
 import { ParameterReader } from '@henrist/cdk-cross-region-params';
 
 export class CdkStack extends cdk.Stack {
@@ -26,6 +27,18 @@ export class CdkStack extends cdk.Stack {
         { name: 'private', subnetType: SubnetType.PRIVATE }
       ]
     });
+
+    const ec2SG = new SecurityGroup(this,'ec2SG',{ vpc: vpc });
+
+    ec2SG.connections.allowFrom(Peer.ipv4(vpc.vpcCidrBlock),Port.tcp(80));
+
+    const fs = new FileSystem(this,'efsShared',{
+      vpc: vpc,
+      vpcSubnets: { subnetGroupName: 'private'}
+    });
+
+    fs.connections.allowDefaultPortFrom(ec2SG);
+    fs.addAccessPoint('ec2AccessPoint');
 
     Object.entries({ 'ssm':InterfaceVpcEndpointAwsService.SSM, 'ssmMessages':InterfaceVpcEndpointAwsService.SSM_MESSAGES, 'ec2Messages':InterfaceVpcEndpointAwsService.EC2_MESSAGES}).forEach(entry => { 
       const endpoint = vpc.addInterfaceEndpoint(`${entry[0]}ssmEndpoint`, {
@@ -58,7 +71,7 @@ export class CdkStack extends cdk.Stack {
       machineImage: new AmazonLinuxImage(),
       maxCapacity: 8,
       minCapacity: 0,
-      desiredCapacity: 1,
+      desiredCapacity: 0,
       maxInstanceLifetime: Duration.days(10),
       spotPrice: '0.5',
       init: CloudFormationInit.fromConfigSets({
@@ -68,19 +81,27 @@ export class CdkStack extends cdk.Stack {
         configs: {
           yumPreinstall: new InitConfig([
             InitPackage.yum('httpd24'),
+            InitPackage.yum('amazon-efs-utils'),
+            InitPackage.yum('nfs-utils'),
           ]),
           config: new InitConfig([
             InitFile.fromAsset('/var/www/html/demo.html', 'site/dynamic/demo.html'),
             InitFile.fromAsset('/tmp/perms.sh', 'lib/perms.sh', { mode: '000777' }),
             InitGroup.fromName('www'),
             InitService.enable('httpd'),
-            InitCommand.shellCommand('sh -c /tmp/perms.sh')
+            InitCommand.shellCommand('sh -c /tmp/perms.sh'),
+            InitCommand.shellCommand("file_system_id_1=" + fs.fileSystemId),
+            InitCommand.shellCommand("mkdir -p /mnt/efs/fs1"),
+            InitCommand.shellCommand(`test -f /sbin/mount.efs && echo ${fs.fileSystemId}:/ /mnt/efs/fs1 efs defaults,_netdev >> /etc/fstab || ` +
+            `echo \"${fs.fileSystemId}.efs.${Stack.of(this).region}.amazonaws.com:/ /mnt/efs/fs1 nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport,_netdev 0 0\" >> /etc/fstab`),
+            InitCommand.shellCommand("mount -a -t efs,nfs4 defaults")
           ]),
-        },
+        }
       }),
       signals: Signals.waitForAll({
         timeout: Duration.minutes(10),
-      })
+      }),
+      securityGroup: ec2SG
     });
 
     asg.attachToApplicationTargetGroup(tg);
