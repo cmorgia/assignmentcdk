@@ -14,35 +14,36 @@ Since the solutions is based on CloudFront, which needs to have the SSL certific
 
 Basically, there's a first bootstrapping sequence, where we need to create the subdomain public zones and the SSL certificates for the CloudFront distribution, for the test and production environment.
 
-here we also bootstrap CDK for the required regions.
-
 ![Regions layout](regions.png "Regions layout")
 
+## Instructions
 
-# Instructions
-
-The current setup is based on three accounts: **cicd**, **test** and **prod**.
+The current setup is based on three accounts: **cicd**, **test** and **prod** and a registered parent DNS domain. The solution has been tested with Route53 registered domain.
 
 These accounts should be configured as AWS CLI profiles.
 
 Make sure you have installed AWS CLI and CDK toolkit.
 
 Configure **cdk.json** by replacing the entries *cicdAccount*, *testAccount* and *prodAccount* with the respective account IDs.
+Also make sure to reflect the parent domain name in the entry *parentDomain*.
 
-Bootstrap all the accounts across the selected regions:
+## Bootstrapping
 
-- cicd on eu-west-1 only (no need to deploy the certificate for CloudFront)
-- test and prod across us-west-1 and eu-west-1
+Before bootstrapping using the provided script **botstrap.sh**, edit the script and change the AWS CLI profile names with the ones corresponding to your set up.
+The script performs all the necessary CDK bootstrapping in all the configured accounts and regions, then proceeds to create the required resources:
 
-`cdk bootstrap --profile <profile> --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess --trust <cicd account id> aws://<target account id>/<target region>`
+- public hosted zones for test and prod, with (cross account) zone delegation records
+- SSL certificates
+- CDK lookup roles
 
-In order to prepare the execution of the CDK pipeline across the accounts, the following commands need to be executed:
+To finish, the script deploys the main CDK pipeline. Take note of the output value, being the reference to the CodeCommit repository you will need to commit the code against.
 
-`cdk --profile <test profile> deploy --app "npx ts-node bin/required-resources.ts" test`
+## Deploy the solution
 
-`cdk --profile <test profile> --app "npx ts-node bin/required-resources.ts" testCert`
+Once all the environments are bootstrapped and the pipeline activated, you need to deploy the infrastructure code by committing it to the CodeCommit repo:
 
-`cdk --profile <prod profile> deploy --app "npx ts-node bin/required-resources.ts" prod`
+`git remote remove codecommit`
 
-`cdk --profile <prod profile> --app "npx ts-node bin/required-resources.ts" prodCert`
+`git remote add codecommit <URL from pipeline stack>`
 
+`git push codecommit`
