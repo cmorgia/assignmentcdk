@@ -2,7 +2,8 @@ import { AutoScalingGroup, Signals } from '@aws-cdk/aws-autoscaling';
 import { Certificate } from '@aws-cdk/aws-certificatemanager';
 import { Distribution, OriginProtocolPolicy, ViewerProtocolPolicy } from '@aws-cdk/aws-cloudfront';
 import { LoadBalancerV2Origin, S3Origin } from '@aws-cdk/aws-cloudfront-origins';
-import { AmazonLinuxImage, CloudFormationInit, InitCommand, InitConfig, InitFile, InitGroup, InitPackage, InitService, InstanceClass, InstanceSize, InstanceType, InterfaceVpcEndpointAwsService, Peer, Port, SubnetType, Vpc } from '@aws-cdk/aws-ec2';
+import { AmazonLinuxImage, CloudFormationInit, InitCommand, InitConfig, InitFile, InitGroup, InitPackage, InitService, InstanceClass, InstanceSize, InstanceType, InterfaceVpcEndpointAwsService, Peer, Port, SecurityGroup, SubnetType, Vpc } from '@aws-cdk/aws-ec2';
+import { CfnReplicationGroup, CfnSubnetGroup } from '@aws-cdk/aws-elasticache';
 import { ApplicationLoadBalancer, ApplicationProtocol, ApplicationTargetGroup, TargetType } from '@aws-cdk/aws-elasticloadbalancingv2';
 import { DatabaseClusterEngine, ParameterGroup, ServerlessCluster } from '@aws-cdk/aws-rds';
 import { ARecord, PublicHostedZone, RecordTarget } from '@aws-cdk/aws-route53';
@@ -10,7 +11,7 @@ import { CloudFrontTarget } from '@aws-cdk/aws-route53-targets';
 import { Bucket } from '@aws-cdk/aws-s3';
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
 import * as cdk from '@aws-cdk/core';
-import { Duration } from '@aws-cdk/core';
+import { CfnOutput, Duration } from '@aws-cdk/core';
 import { ParameterReader } from '@henrist/cdk-cross-region-params';
 
 export class CdkStack extends cdk.Stack {
@@ -69,7 +70,7 @@ export class CdkStack extends cdk.Stack {
             InitPackage.yum('httpd24'),
           ]),
           config: new InitConfig([
-            InitFile.fromAsset('/var/www/html/demo.html', 'site/demo.html'),
+            InitFile.fromAsset('/var/www/html/demo.html', 'site/dynamic/demo.html'),
             InitFile.fromAsset('/tmp/perms.sh', 'lib/perms.sh', { mode: '000777' }),
             InitGroup.fromName('www'),
             InitService.enable('httpd'),
@@ -124,13 +125,49 @@ export class CdkStack extends cdk.Stack {
       target: RecordTarget.fromAlias(new CloudFrontTarget(myWebDistribution))
     });
 
+    new CfnOutput(this, 'distribution static demo', {
+      value: `https://www.${subdomain}.testlabmorgia.co.uk/static/demo.html`,
+      description: 'Static demo page'
+    });
+
+    new CfnOutput(this, 'distribution dynamic demo', {
+      value: `https://www.${subdomain}.testlabmorgia.co.uk/demo.html`,
+      description: 'Dynamic demo page'
+    });
+
     new BucketDeployment(this, 'bucketDeployment', {
       destinationBucket: staticFiles,
       destinationKeyPrefix:'static',
-      sources: [Source.asset('./site')],
+      sources: [Source.asset('./site/static')],
       distribution: myWebDistribution,
       distributionPaths: ['/static/*']
     });
-  }
 
+    const subnetGroup = new CfnSubnetGroup(this, 'redisSubnetGroup', {
+      cacheSubnetGroupName: 'redisSubnetGroup',
+      subnetIds: vpc.selectSubnets({ subnetGroupName: 'private' }).subnetIds,
+      description: 'SubnetGroup for Redis Cluster'
+    });
+    const secGroup = new SecurityGroup(this, 'redisSecGroup', { vpc: vpc });
+    secGroup.connections.allowFrom(Peer.ipv4(vpc.vpcCidrBlock), Port.tcp(6379));
+
+    const redisReplGroup = new CfnReplicationGroup(this, 'redis', {
+        replicationGroupDescription: 'Redis Replication Group',
+        cacheNodeType: 'cache.t3.micro',
+        cacheSubnetGroupName: subnetGroup.cacheSubnetGroupName,
+        multiAzEnabled: true,
+        numCacheClusters: 2,
+        automaticFailoverEnabled: true,
+        engine: 'redis',
+        port: 6379,
+        securityGroupIds: [secGroup.securityGroupId],
+        snapshotRetentionLimit: 7
+    });
+    redisReplGroup._addResourceDependency(subnetGroup);
+
+    new CfnOutput(this, 'redisEndpoint', {
+      value: `redis://${redisReplGroup.attrPrimaryEndPointAddress}:${redisReplGroup.attrPrimaryEndPointPort}`,
+      description: 'Redis endpoint'
+    });
+  }
 }
