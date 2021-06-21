@@ -6,16 +6,17 @@ import { CertStack } from '../lib/cert-stack';
 const app = new cdk.App();
 
 const mainRegion = app.node.tryGetContext('mainRegion');
-const test = { account: app.node.tryGetContext('testAccount'), region: mainRegion }
-const prod = { account: app.node.tryGetContext('prodAccount'), region: mainRegion }
+const failoverRegion = app.node.tryGetContext('failoverRegion');
 const trustedAccount = app.node.tryGetContext('cicdAccount');
 const parentZone = app.node.tryGetContext('parentDomain');
 const cloudFrontCertificateRegion = 'us-east-1';
 
-new RequiredResourcesStack(app, 'test', {
-  env: test,
-  trustedAccount
-});
+[mainRegion, failoverRegion].forEach( region => 
+  new RequiredResourcesStack(app, 'test', {
+    env: { account: app.node.tryGetContext('testAccount'), region: region },
+    trustedAccount
+  })
+);
 
 new CertStack(app, 'testCert', {
   subdomain: 'test',
@@ -28,10 +29,12 @@ new CertStack(app, 'testCert', {
   }
 });
 
-new RequiredResourcesStack(app, 'prod', {
-  env: prod,
-  trustedAccount
-});
+[mainRegion, failoverRegion].forEach( region => 
+  new RequiredResourcesStack(app, 'prod', {
+    env: { account: app.node.tryGetContext('prodAccount'), region: region },
+    trustedAccount
+  })
+);
 
 new CertStack(app, 'prodCert', {
   subdomain: 'prod',

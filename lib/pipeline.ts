@@ -5,7 +5,6 @@ import { Effect, PolicyStatement } from "@aws-cdk/aws-iam";
 import { CfnOutput, Construct, Stack, Stage, StageProps } from "@aws-cdk/core";
 import { CdkPipeline, SimpleSynthAction } from "@aws-cdk/pipelines";
 import { CdkStack } from "./cdk-stack";
-import { CertStack } from "./cert-stack";
 
 class MyStage extends Stage {
     constructor(scope: Construct, id: string, subdomain:string, parentDomain:string, props?: StageProps) {
