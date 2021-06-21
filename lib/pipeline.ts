@@ -8,15 +8,16 @@ import { CdkStack } from "./cdk-stack";
 import { CertStack } from "./cert-stack";
 
 class MyStage extends Stage {
-    constructor(scope: Construct, id: string, subdomain:string, props?: StageProps) {
+    constructor(scope: Construct, id: string, subdomain:string, parentDomain:string, props?: StageProps) {
         super(scope, id, props);
-        const stack = new CdkStack(this, 'mainStack', subdomain);
+        const stack = new CdkStack(this, 'mainStack', subdomain,parentDomain);
     }
 }
 
 export interface PipelineStackProps {
     testAccount: string;
     prodAccount: string;
+    parentDomain: string;
 };
 
 export class PipelineStack extends Stack {
@@ -60,9 +61,9 @@ export class PipelineStack extends Stack {
             })
         });
 
-        const testStage = pipeline.addApplicationStage(new MyStage(this, 'testStage', 'test',{ env: { account: config.testAccount, region: 'eu-west-1' } }));
+        const testStage = pipeline.addApplicationStage(new MyStage(this, 'testStage', 'test', config.parentDomain, { env: { account: config.testAccount, region: 'eu-west-1' } }));
         testStage.addManualApprovalAction({actionName:'approveToProduction'});
-        pipeline.addApplicationStage(new MyStage(this, 'prodStage', 'prod', { env: { account: config.prodAccount, region: 'eu-west-1' } }));
+        pipeline.addApplicationStage(new MyStage(this, 'prodStage', 'prod', config.parentDomain, { env: { account: config.prodAccount, region: 'eu-west-1' } }));
 
 
         new CfnOutput(this, 'repositoryHttp', {

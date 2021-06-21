@@ -17,6 +17,7 @@
     "@aws-cdk/core:newStyleStackSynthesis": true,
     "cicdAccount": "052623131611",
     "testAccount": "693196418513",
-    "prodAccount": "536995177148"
+    "prodAccount": "536995177148",
+    "parentDomain": "testlabmorgia.co.uk"
   }
 }

@@ -16,7 +16,7 @@ import { CfnOutput, Duration, Stack } from '@aws-cdk/core';
 import { ParameterReader } from '@henrist/cdk-cross-region-params';
 
 export class CdkStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, subdomain: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.Construct, id: string, subdomain: string, parentDomain:string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     const vpc = new Vpc(this, 'vpc', {
@@ -136,23 +136,23 @@ export class CdkStack extends cdk.Stack {
         }
       },
       certificate: certificate,
-      domainNames: [`www.${subdomain}.testlabmorgia.co.uk`],
+      domainNames: [`www.${subdomain}.${parentDomain}`],
       enableLogging: true
     });
 
     new ARecord(this, 'aliasCF', {
       recordName: 'www',
-      zone: PublicHostedZone.fromLookup(this, 'publicHostedZone', { domainName: `${subdomain}.testlabmorgia.co.uk` }),
+      zone: PublicHostedZone.fromLookup(this, 'publicHostedZone', { domainName: `${subdomain}.${parentDomain}` }),
       target: RecordTarget.fromAlias(new CloudFrontTarget(myWebDistribution))
     });
 
     new CfnOutput(this, 'distribution static demo', {
-      value: `https://www.${subdomain}.testlabmorgia.co.uk/static/demo.html`,
+      value: `https://www.${subdomain}.${parentDomain}/static/demo.html`,
       description: 'Static demo page'
     });
 
     new CfnOutput(this, 'distribution dynamic demo', {
-      value: `https://www.${subdomain}.testlabmorgia.co.uk/demo.html`,
+      value: `https://www.${subdomain}.${parentDomain}/demo.html`,
       description: 'Dynamic demo page'
     });
 

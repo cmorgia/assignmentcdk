@@ -12,5 +12,6 @@ new PipelineStack(app, 'pipelineStack', {
   }
 }, {
   testAccount: app.node.tryGetContext('testAccount'),
-  prodAccount: app.node.tryGetContext('prodAccount')
+  prodAccount: app.node.tryGetContext('prodAccount'),
+  parentDomain: app.node.tryGetContext('parentDomain'),
 });
