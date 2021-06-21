@@ -18,6 +18,7 @@
     "cicdAccount": "052623131611",
     "testAccount": "693196418513",
     "prodAccount": "536995177148",
-    "parentDomain": "testlabmorgia.co.uk"
+    "parentDomain": "testlabmorgia.co.uk",
+    "mainRegion": "eu-west-1"
   }
 }

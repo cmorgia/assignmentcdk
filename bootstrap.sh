@@ -2,12 +2,11 @@
 export CICD_ACCOUNT_ID=$(jq -r .context.cicdAccount <cdk.json)
 export TEST_ACCOUNT_ID=$(jq -r .context.testAccount <cdk.json)
 export PROD_ACCOUNT_ID=$(jq -r .context.prodAccount <cdk.json)
+export REGION=$(jq -r .context.mainRegion <cdk.json)
 
-export CICD_PROFILE=cicd
-export TEST_PROFILE=test
-export PROD_PROFILE=prod
-
-export REGION=eu-west-1
+export CICD_PROFILE=cmorgia.cicd
+export TEST_PROFILE=dipsie
+export PROD_PROFILE=cmorgia.prod
 export CLOUDFRONT_REGION=us-east-1
 
 # bootstrap for CDK pipeline only, main region
@@ -26,3 +25,7 @@ cdk --profile $CICD_PROFILE deploy --app "npx ts-node bin/required-resources.ts"
 
 # deploy the main pipeline
 cdk --profile $CICD_PROFILE deploy pipelineStack
+
+export REPO=$(aws --region $REGION --profile $CICD_PROFILE cloudformation describe-stacks --stack-name pipelineStack --query "Stacks[0].Outputs[?OutputKey=='repositoryHttp'].OutputValue" --output text)
+git remote remove codecommit
+git remote add codecommit $REPO

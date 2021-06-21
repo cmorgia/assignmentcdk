@@ -5,8 +5,9 @@ import { CertStack } from '../lib/cert-stack';
 
 const app = new cdk.App();
 
-const test = { account: app.node.tryGetContext('testAccount'), region: 'eu-west-1' }
-const prod = { account: app.node.tryGetContext('prodAccount'), region: 'eu-west-1' }
+const mainRegion = app.node.tryGetContext('mainRegion');
+const test = { account: app.node.tryGetContext('testAccount'), region: mainRegion }
+const prod = { account: app.node.tryGetContext('prodAccount'), region: mainRegion }
 const trustedAccount = app.node.tryGetContext('cicdAccount');
 const parentZone = app.node.tryGetContext('parentDomain');
 const cloudFrontCertificateRegion = 'us-east-1';

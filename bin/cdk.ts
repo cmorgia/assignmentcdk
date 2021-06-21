@@ -8,10 +8,10 @@ const app = new cdk.App();
 new PipelineStack(app, 'pipelineStack', {
   env: {
     account: app.node.tryGetContext('cicdAccount'),
-    region: 'eu-west-1'
+    region: app.node.tryGetContext('mainRegion')
   }
 }, {
   testAccount: app.node.tryGetContext('testAccount'),
   prodAccount: app.node.tryGetContext('prodAccount'),
-  parentDomain: app.node.tryGetContext('parentDomain'),
+  parentDomain: app.node.tryGetContext('parentDomain')
 });

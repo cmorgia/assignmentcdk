@@ -35,5 +35,9 @@
   "hosted-zone:account=693196418513:domainName=test.testlabmorgia.co.uk:region=eu-west-1": {
     "Id": "/hostedzone/Z0414899C0J8ACPW88SE",
     "Name": "test.testlabmorgia.co.uk."
+  },
+  "hosted-zone:account=536995177148:domainName=prod.testlabmorgia.co.uk:region=eu-west-1": {
+    "Id": "/hostedzone/Z022649820UR4QKV5LIX3",
+    "Name": "prod.testlabmorgia.co.uk."
   }
 }

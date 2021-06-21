@@ -61,9 +61,9 @@ export class PipelineStack extends Stack {
             })
         });
 
-        const testStage = pipeline.addApplicationStage(new MyStage(this, 'testStage', 'test', config.parentDomain, { env: { account: config.testAccount, region: 'eu-west-1' } }));
+        const testStage = pipeline.addApplicationStage(new MyStage(this, 'testStage', 'test', config.parentDomain, { env: { account: config.testAccount, region: Stack.of(this).region } }));
         testStage.addManualApprovalAction({actionName:'approveToProduction'});
-        pipeline.addApplicationStage(new MyStage(this, 'prodStage', 'prod', config.parentDomain, { env: { account: config.prodAccount, region: 'eu-west-1' } }));
+        pipeline.addApplicationStage(new MyStage(this, 'prodStage', 'prod', config.parentDomain, { env: { account: config.prodAccount, region: Stack.of(this).region } }));
 
 
         new CfnOutput(this, 'repositoryHttp', {
